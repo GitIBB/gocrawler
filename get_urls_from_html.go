@@ -32,6 +32,9 @@ func getURLsFromHTML(htmlBody, rawBaseURL string) ([]string, error) {
 					}
 					// Resolve relative URLs against the base URL
 					absoluteURL := baseURL.ResolveReference(hrefURL)
+					if s := strings.ToLower(absoluteURL.Scheme); s != "http" && s != "https" {
+						continue // skip non-http(s) URLs
+					}
 					urls = append(urls, absoluteURL.String())
 					break
 				}

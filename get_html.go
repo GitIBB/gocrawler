@@ -3,10 +3,11 @@ package main
 import (
 	"fmt"
 	"io"
+	"mime"
 	"net/http"
 )
 
-func getHtml(rawURL string) (string, error) {
+func getHTML(rawURL string) (string, error) {
 
 	client := &http.Client{}
 
@@ -21,11 +22,14 @@ func getHtml(rawURL string) (string, error) {
 		return "", err
 	}
 	defer response.Body.Close()
-	if response.Header.Get("Content-Type") != "text/html" {
-		return "", fmt.Errorf("expected text/html but got %s", response.Header.Get("Content-Type"))
-	}
 	if response.StatusCode != http.StatusOK {
 		return "", fmt.Errorf("failed to fetch HTML: %s", response.Status)
+	}
+
+	ct := response.Header.Get("Content-Type")
+	mt, _, err := mime.ParseMediaType(ct)
+	if err != nil || mt != "text/html" {
+		return "", fmt.Errorf("expected text/html but got %s: %v", mt, err)
 	}
 
 	body, err := io.ReadAll(response.Body)
